@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   getUserProducts,
   getProductById,
+  getProductByIdForUser,
   createProductRecord,
   updateProductRecord,
   deleteProductRecord,
@@ -55,7 +56,11 @@ export const appRouter = router({
 
     get: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .query(({ input }) => getProductById(input.id)),
+      .query(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.id, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return product;
+      }),
 
     create: protectedProcedure
       .input(
@@ -86,20 +91,30 @@ export const appRouter = router({
           demandElasticity: z.string().optional(),
         })
       )
-      .mutation(({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.id, ctx.user.id);
+        if (!product) throw new Error("Product not found");
         const { id, ...data } = input;
         return updateProductRecord(id, data);
       }),
 
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => deleteProductRecord(input.id)),
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.id, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return deleteProductRecord(input.id);
+      }),
   }),
 
   competitors: router({
     getByProduct: protectedProcedure
       .input(z.object({ productId: z.number() }))
-      .query(({ input }) => getCompetitorPricesByProduct(input.productId)),
+      .query(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return getCompetitorPricesByProduct(input.productId);
+      }),
 
     add: protectedProcedure
       .input(
@@ -111,13 +126,21 @@ export const appRouter = router({
           inStock: z.number().int().default(1),
         })
       )
-      .mutation(({ input }) => addCompetitorPriceRecord(input)),
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return addCompetitorPriceRecord(input);
+      }),
   }),
 
   pricing: router({
     getHistory: protectedProcedure
       .input(z.object({ productId: z.number(), limit: z.number().default(50) }))
-      .query(({ input }) => getPricingHistoryRecords(input.productId, input.limit)),
+      .query(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return getPricingHistoryRecords(input.productId, input.limit);
+      }),
 
     createRecord: protectedProcedure
       .input(
@@ -131,13 +154,21 @@ export const appRouter = router({
           applied: z.number().int().default(0),
         })
       )
-      .mutation(({ input }) => createPricingHistoryRecord(input)),
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return createPricingHistoryRecord(input);
+      }),
   }),
 
   demand: router({
     getHistory: protectedProcedure
       .input(z.object({ productId: z.number(), limit: z.number().default(100) }))
-      .query(({ input }) => getDemandDataRecords(input.productId, input.limit)),
+      .query(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return getDemandDataRecords(input.productId, input.limit);
+      }),
 
     add: protectedProcedure
       .input(
@@ -150,7 +181,11 @@ export const appRouter = router({
           seasonality: z.enum(["normal", "peak", "low"]).default("normal"),
         })
       )
-      .mutation(({ input }) => addDemandDataRecord(input)),
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
+        if (!product) throw new Error("Product not found");
+        return addDemandDataRecord(input);
+      }),
   }),
 
   optimization: router({
@@ -160,8 +195,8 @@ export const appRouter = router({
      */
     runPipeline: protectedProcedure
       .input(z.object({ productId: z.number() }))
-      .mutation(async ({ input }) => {
-        const product = await getProductById(input.productId);
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
         if (!product) {
           throw new Error("Product not found");
         }
@@ -263,8 +298,8 @@ export const appRouter = router({
           reason: z.string(),
         })
       )
-      .mutation(async ({ input }) => {
-        const product = await getProductById(input.productId);
+      .mutation(async ({ ctx, input }) => {
+        const product = await getProductByIdForUser(input.productId, ctx.user.id);
         if (!product) {
           throw new Error("Product not found");
         }

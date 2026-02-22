@@ -109,6 +109,19 @@ export async function getProductById(productId: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+/** Returns product only if it belongs to the user. Use for ownership checks. */
+export async function getProductByIdForUser(productId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+  const product = result[0];
+  return product?.userId === userId ? product : undefined;
+}
+
 export async function createProductRecord(data: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

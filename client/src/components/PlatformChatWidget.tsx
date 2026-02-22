@@ -42,7 +42,9 @@ export function PlatformChatWidget() {
     const newMessages = [...messages, newUserMessage];
     setMessages(newMessages);
     chatMutation.mutate({
-      messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+      messages: newMessages
+        .filter((m): m is Message & { role: "user" | "assistant" } => m.role !== "system")
+        .map((m) => ({ role: m.role, content: m.content })),
     });
   };
 
