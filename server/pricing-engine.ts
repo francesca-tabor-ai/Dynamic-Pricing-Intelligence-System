@@ -2,46 +2,9 @@
  * Pricing Optimization Engine
  * Implements mathematical models for demand forecasting and profit maximization
  */
+import { forecastDemand, calculateProfit } from "@shared/pricing-forecast";
 
-/**
- * Demand forecast based on price elasticity and historical data
- * Demand = β0 + β1 * Price + β2 * CompetitorPrice
- */
-export function forecastDemand(
-  baselineDemand: number,
-  currentPrice: number,
-  newPrice: number,
-  elasticity: number,
-  competitorPrice: number,
-  competitorWeight: number = 0.3
-): number {
-  // Calculate price change percentage
-  const priceChangePercent = (newPrice - currentPrice) / currentPrice;
-
-  // Calculate demand change based on elasticity
-  const demandChangePercent = elasticity * priceChangePercent;
-
-  // Competitor influence: if competitor price is lower, reduce demand
-  const competitorInfluence =
-    competitorPrice < newPrice ? competitorWeight * ((competitorPrice - newPrice) / newPrice) : 0;
-
-  // Final demand = baseline * (1 + elasticity effect + competitor effect)
-  const forecastedDemand = baselineDemand * (1 + demandChangePercent + competitorInfluence);
-
-  return Math.max(0, Math.round(forecastedDemand));
-}
-
-/**
- * Calculate profit for a given price
- * Profit = (Price - Cost) * Demand(Price)
- */
-export function calculateProfit(
-  price: number,
-  cost: number,
-  demand: number
-): number {
-  return (price - cost) * demand;
-}
+export { forecastDemand, calculateProfit };
 
 /**
  * Find optimal price using gradient descent

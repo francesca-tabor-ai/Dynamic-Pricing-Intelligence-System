@@ -15,6 +15,7 @@ const CaseStudies = lazy(() => import("./pages/CaseStudies"));
 const Products = lazy(() => import("./pages/Products"));
 const Recommendations = lazy(() => import("./pages/Recommendations"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
+const Simulator = lazy(() => import("./pages/Simulator"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -77,6 +78,13 @@ function Router() {
                   <Suspense fallback={<PageFallback />}>
                     <PageTransition>
                       <Pipeline />
+                    </PageTransition>
+                  </Suspense>
+                </Route>
+                <Route path={"/simulator"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Simulator />
                     </PageTransition>
                   </Suspense>
                 </Route>
