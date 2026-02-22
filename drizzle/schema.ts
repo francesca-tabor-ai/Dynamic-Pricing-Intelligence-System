@@ -1,24 +1,26 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { integer, pgEnum, pgTable, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 /**
  * Core user table backing auth flow.
  * Extend this file with additional tables as your product grows.
  * Columns use camelCase to match both database fields and generated types.
  */
-export const users = mysqlTable("users", {
+export const usersRoleEnum = pgEnum("users_role", ["user", "admin"]);
+
+export const users = pgTable("users", {
   /**
    * Surrogate primary key. Auto-incremented numeric value managed by the database.
    * Use this for relations between tables.
    */
-  id: int("id").autoincrement().primaryKey(),
+  id: serial("id").primaryKey(),
   /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: usersRoleEnum("role").default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
 });
 
@@ -28,19 +30,19 @@ export type InsertUser = typeof users.$inferInsert;
 /**
  * Products table: Core product catalog with pricing and cost data
  */
-export const products = mysqlTable("products", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
   name: varchar("name", { length: 255 }).notNull(),
   sku: varchar("sku", { length: 100 }).notNull().unique(),
-  baseCost: int("baseCost").notNull(), // Stored in cents
-  currentPrice: int("currentPrice").notNull(), // Stored in cents
-  minMargin: int("minMargin").default(15).notNull(), // Percentage (15%)
-  maxPrice: int("maxPrice"), // Optional ceiling in cents
-  inventory: int("inventory").default(0).notNull(),
+  baseCost: integer("baseCost").notNull(), // Stored in cents
+  currentPrice: integer("currentPrice").notNull(), // Stored in cents
+  minMargin: integer("minMargin").default(15).notNull(), // Percentage (15%)
+  maxPrice: integer("maxPrice"), // Optional ceiling in cents
+  inventory: integer("inventory").default(0).notNull(),
   demandElasticity: varchar("demandElasticity", { length: 50 }).default("1.2"), // Price elasticity
   createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type Product = typeof products.$inferSelect;
@@ -49,13 +51,13 @@ export type InsertProduct = typeof products.$inferInsert;
 /**
  * Competitor prices: Track competitor pricing for each product
  */
-export const competitorPrices = mysqlTable("competitorPrices", {
-  id: int("id").autoincrement().primaryKey(),
-  productId: int("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
+export const competitorPrices = pgTable("competitorPrices", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
   competitorName: varchar("competitorName", { length: 255 }).notNull(),
-  price: int("price").notNull(), // Stored in cents
+  price: integer("price").notNull(), // Stored in cents
   url: text("url"),
-  inStock: int("inStock").default(1).notNull(), // 0 = out of stock, 1 = in stock
+  inStock: integer("inStock").default(1).notNull(), // 0 = out of stock, 1 = in stock
   recordedAt: timestamp("recordedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -66,15 +68,15 @@ export type InsertCompetitorPrice = typeof competitorPrices.$inferInsert;
 /**
  * Pricing history: Track price changes and recommendations over time
  */
-export const pricingHistory = mysqlTable("pricingHistory", {
-  id: int("id").autoincrement().primaryKey(),
-  productId: int("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
-  previousPrice: int("previousPrice").notNull(), // Stored in cents
-  newPrice: int("newPrice").notNull(), // Stored in cents
-  recommendedPrice: int("recommendedPrice").notNull(), // Stored in cents
+export const pricingHistory = pgTable("pricingHistory", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
+  previousPrice: integer("previousPrice").notNull(), // Stored in cents
+  newPrice: integer("newPrice").notNull(), // Stored in cents
+  recommendedPrice: integer("recommendedPrice").notNull(), // Stored in cents
   reason: varchar("reason", { length: 255 }),
-  expectedProfitChange: int("expectedProfitChange"), // Percentage
-  applied: int("applied").default(0).notNull(), // 0 = not applied, 1 = applied
+  expectedProfitChange: integer("expectedProfitChange"), // Percentage
+  applied: integer("applied").default(0).notNull(), // 0 = not applied, 1 = applied
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -84,13 +86,13 @@ export type InsertPricingHistory = typeof pricingHistory.$inferInsert;
 /**
  * Demand data: Historical demand and sales data for forecasting
  */
-export const demandData = mysqlTable("demandData", {
-  id: int("id").autoincrement().primaryKey(),
-  productId: int("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
-  price: int("price").notNull(), // Stored in cents
-  quantity: int("quantity").notNull(), // Units sold
-  revenue: int("revenue").notNull(), // Stored in cents
-  competitorPrice: int("competitorPrice"), // Competitor price at time of sale
+export const demandData = pgTable("demandData", {
+  id: serial("id").primaryKey(),
+  productId: integer("productId").notNull().references(() => products.id, { onDelete: "cascade" }),
+  price: integer("price").notNull(), // Stored in cents
+  quantity: integer("quantity").notNull(), // Units sold
+  revenue: integer("revenue").notNull(), // Stored in cents
+  competitorPrice: integer("competitorPrice"), // Competitor price at time of sale
   seasonality: varchar("seasonality", { length: 50 }).default("normal"), // normal, peak, low
   recordedAt: timestamp("recordedAt").defaultNow().notNull(),
 });

@@ -1,14 +1,21 @@
+import dotenv from "dotenv";
 import { defineConfig } from "drizzle-kit";
 
-const connectionString = process.env.DATABASE_URL;
+dotenv.config();
+dotenv.config({ path: ".env.local" });
+
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.DATABASE_PUBLIC_URL ||
+  process.env.DATABASE_PRIVATE_URL;
 if (!connectionString) {
-  throw new Error("DATABASE_URL is required to run drizzle commands");
+  throw new Error("DATABASE_URL, DATABASE_PUBLIC_URL, or DATABASE_PRIVATE_URL is required");
 }
 
 export default defineConfig({
   schema: "./drizzle/schema.ts",
   out: "./drizzle",
-  dialect: "mysql",
+  dialect: "postgresql",
   dbCredentials: {
     url: connectionString,
   },

@@ -13,7 +13,8 @@ const isProduction = process.env.NODE_ENV === "production";
 function validateProductionEnv() {
   if (!isProduction) return;
   const missing: string[] = [];
-  if (!process.env.DATABASE_URL?.trim()) missing.push("DATABASE_URL");
+  const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL;
+  if (!dbUrl?.trim()) missing.push("DATABASE_URL or DATABASE_PUBLIC_URL");
   if (!process.env.JWT_SECRET?.trim()) missing.push("JWT_SECRET");
   if (missing.length > 0) {
     console.error("[Startup] Missing required environment variables in production:", missing.join(", "));
