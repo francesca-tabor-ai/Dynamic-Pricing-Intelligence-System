@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,10 +14,16 @@ import {
 import { CheckCircle2, Clock, AlertCircle, Loader2, ArrowRight } from "lucide-react";
 
 export default function Pipeline() {
-  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const search = useSearch();
+  const productFromUrl = new URLSearchParams(search || "").get("product");
+  const [selectedProductId, setSelectedProductId] = useState<string>(productFromUrl || "");
   const [pipelineResult, setPipelineResult] = useState<any>(null);
 
   const { data: products } = trpc.products.list.useQuery();
+
+  useEffect(() => {
+    if (productFromUrl) setSelectedProductId(productFromUrl);
+  }, [productFromUrl]);
   const pipelineMutation = trpc.optimization.runPipeline.useMutation();
 
   const handleRunPipeline = async () => {

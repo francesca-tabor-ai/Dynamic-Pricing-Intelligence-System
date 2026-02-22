@@ -23,6 +23,7 @@ import { invokeLLM } from "./_core/llm";
 const PLATFORM_CHAT_SYSTEM_PROMPT = `You are a helpful assistant for the Dynamic Pricing Intelligence System (DPIS). Your role is to answer questions about the platform and guide users.
 
 DPIS is a dashboard that helps users:
+- **Health**: At-a-glance product health scores. See which products need attention (margin, competitive position, data readiness). Click a row to run the pipeline for that product.
 - **Products**: Manage products (name, SKU, base cost, current price, min margin, max price, inventory, demand elasticity). Add and edit products here.
 - **Recommendations**: View AI-generated pricing recommendations. The system runs a pipeline (Scraper → Demand Forecast → Optimization → Strategy) to suggest optimal prices. Users can apply recommendations to update product prices.
 - **Pipeline**: Run the optimization pipeline for a product. It fetches competitor prices, forecasts demand, computes optimal price, and applies business rules to produce a final recommended price.
@@ -189,6 +190,110 @@ export const appRouter = router({
   }),
 
   optimization: router({
+    /**
+     * Product health: Aggregated score per product for quick triage
+     */
+    getProductHealth: protectedProcedure.query(async ({ ctx }) => {
+      const products = await getUserProducts(ctx.user.id);
+      const results: Array<{
+        productId: number;
+        name: string;
+        sku: string;
+        score: number;
+        status: "healthy" | "attention" | "critical";
+        issues: string[];
+        currentPrice: number;
+        marginPct: number;
+        competitorCount: number;
+        avgCompetitorPrice: number | null;
+      }> = [];
+
+      for (const p of products) {
+        const marginPct =
+          p.currentPrice > 0
+            ? Math.round(((p.currentPrice - p.baseCost) / p.currentPrice) * 100)
+            : 0;
+        const minMargin = p.minMargin ?? 15;
+
+        const [competitors, demandHistory] = await Promise.all([
+          getCompetitorPricesByProduct(p.id),
+          getDemandDataRecords(p.id, 10),
+        ]);
+
+        const latestCompetitorPrices = competitors
+          .filter((c, i, arr) => {
+            const firstForCompetitor = arr.findIndex((x) => x.competitorName === c.competitorName) === i;
+            return firstForCompetitor;
+          })
+          .map((c) => c.price);
+        const avgCompetitorPrice =
+          latestCompetitorPrices.length > 0
+            ? Math.round(
+                latestCompetitorPrices.reduce((a, b) => a + b, 0) / latestCompetitorPrices.length
+              )
+            : null;
+
+        const issues: string[] = [];
+        let score = 100;
+
+        // Margin check
+        if (marginPct < minMargin) {
+          issues.push(`Margin (${marginPct}%) below minimum (${minMargin}%)`);
+          score -= 35;
+        } else if (marginPct < minMargin + 5) {
+          issues.push(`Margin close to minimum`);
+          score -= 10;
+        }
+
+        // Competitor position
+        if (avgCompetitorPrice && avgCompetitorPrice > 0) {
+          const priceRatio = p.currentPrice / avgCompetitorPrice;
+          if (priceRatio > 1.2) {
+            issues.push(`${Math.round((priceRatio - 1) * 100)}% above average competitor price`);
+            score -= 30;
+          } else if (priceRatio > 1.05) {
+            score -= 10;
+          }
+        } else if (competitors.length === 0) {
+          issues.push("No competitor data");
+          score -= 15;
+        }
+
+        // Data readiness
+        if (demandHistory.length === 0 && competitors.length === 0) {
+          issues.push("Add demand data and competitors for better recommendations");
+          score -= 10;
+        }
+
+        // Low inventory
+        const inv = p.inventory ?? 0;
+        if (inv > 0 && inv < 5) {
+          issues.push("Low inventory");
+          score -= 5;
+        }
+
+        score = Math.max(0, Math.min(100, score));
+
+        const status: "healthy" | "attention" | "critical" =
+          score >= 80 ? "healthy" : score >= 50 ? "attention" : "critical";
+
+        results.push({
+          productId: p.id,
+          name: p.name,
+          sku: p.sku,
+          score,
+          status,
+          issues,
+          currentPrice: p.currentPrice,
+          marginPct,
+          competitorCount: competitors.length,
+          avgCompetitorPrice,
+        });
+      }
+
+      return results;
+    }),
+
     /**
      * Multi-agent pipeline: Scraper → Demand Forecast → Optimization → Strategy
      * Simulates the complete pricing recommendation workflow

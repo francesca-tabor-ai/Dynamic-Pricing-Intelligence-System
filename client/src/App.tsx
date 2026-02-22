@@ -17,6 +17,7 @@ const Recommendations = lazy(() => import("./pages/Recommendations"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
 const Simulator = lazy(() => import("./pages/Simulator"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Health = lazy(() => import("./pages/Health"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageFallback() {
@@ -58,7 +59,14 @@ function Router() {
             <DashboardLayout>
               <Switch>
                 <Route path={"/"}>
-                  <Redirect to="/dashboard/analytics" replace />
+                  <Redirect to="/dashboard/health" replace />
+                </Route>
+                <Route path={"/health"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Health />
+                    </PageTransition>
+                  </Suspense>
                 </Route>
                 <Route path={"/products"}>
                   <Suspense fallback={<PageFallback />}>
