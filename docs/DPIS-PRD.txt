@@ -1,0 +1,409 @@
+Product Requirements Document (PRD)
+Dynamic Pricing Intelligence System (DPIS)
+1. Overview
+1.1 Product Name
+
+Dynamic Pricing Intelligence System (DPIS)
+
+1.2 Product Summary
+
+DPIS is an AI-driven pricing optimization platform that automatically adjusts product prices using competitor intelligence, demand forecasting, and mathematical optimization to maximize profit while respecting business constraints.
+
+The system continuously monitors competitor pricing, forecasts demand sensitivity, and computes optimal pricing decisions in near real-time.
+
+2. Business Problem
+Current Challenges
+
+Retailers face several pricing inefficiencies:
+
+• Manual pricing decisions based on incomplete data
+• Slow reaction to competitor price changes
+• Lost margin due to underpricing
+• Lost sales due to overpricing
+• Lack of demand elasticity understanding
+• Inability to optimize profit dynamically
+
+Example Scenario
+
+Competitor drops price from £100 → £90
+Retailer reacts 2 days later → loses sales and market share
+
+OR
+
+Retailer prices too low → unnecessary margin loss
+
+3. Goals and Objectives
+Primary Goal
+
+Maximize profit automatically using data-driven pricing decisions.
+
+Secondary Goals
+
+• Increase margin by 5–15%
+• Increase revenue by 3–10%
+• Reduce manual pricing work by 90%
+• React to competitor price changes within minutes
+
+4. Success Metrics (KPIs)
+Metric	Target
+Profit Margin Increase	+5–15%
+Revenue Increase	+3–10%
+Price Reaction Time	< 15 minutes
+Forecast Accuracy	> 85%
+Price Update Success Rate	> 99%
+Manual Pricing Reduction	> 90%
+5. Users
+Primary Users
+
+• E-commerce retailers
+• Pricing managers
+• Marketplace sellers (Amazon, Shopify, Walmart)
+
+Secondary Users
+
+• Revenue managers
+• Business analysts
+
+6. System Architecture Overview
+                Competitor Websites
+              (Amazon, eBay, Walmart)
+                         │
+                         ▼
+                 Scraper Agent
+                         │
+                         ▼
+                  Pricing Database
+                         │
+       ┌───────────────┼───────────────┐
+       ▼               ▼               ▼
+Demand Forecast   Optimization   Strategy Agent
+Agent             Agent
+       │               │               │
+       └───────────────┴───────────────┘
+                         │
+                         ▼
+                 Price Recommendation
+                         │
+                         ▼
+                 Store / Marketplace
+7. Agent Specifications
+Agent 1: Scraper Agent
+Purpose
+
+Collect competitor pricing and product intelligence.
+
+Inputs
+
+• Product identifiers (SKU, ASIN, URL)
+
+Outputs
+
+• Competitor price
+• Seller name
+• Timestamp
+• Stock availability
+
+Tools
+
+• requests
+• BeautifulSoup
+• Scrapy
+• Playwright (for dynamic pages)
+
+Frequency
+
+Every 5–30 minutes
+
+Failure Handling
+
+Retry logic
+Fallback scrapers
+Proxy rotation
+
+Agent 2: Demand Forecast Agent
+Purpose
+
+Predict demand as a function of price and time.
+
+Inputs
+
+• Historical prices
+• Sales volume
+• Competitor prices
+• Seasonality
+• Promotions
+
+Outputs
+
+Demand forecast function:
+
+Demand = f(price, time, competitor_price, seasonality)
+Models Used
+
+Linear Regression
+
+Demand = β0 + β1 * Price + β2 * CompetitorPrice
+
+ARIMA
+
+Time-series demand forecasting
+
+Elasticity Model
+
+Elasticity = % Demand Change / % Price Change
+
+Libraries
+
+• numpy
+• pandas
+• statsmodels
+• scikit-learn
+
+Output Example
+Price: £100 → Demand: 50 units
+Price: £90 → Demand: 65 units
+Price: £110 → Demand: 40 units
+Agent 3: Optimization Agent
+Purpose
+
+Calculate optimal price that maximizes profit.
+
+Profit Function
+Profit=(Price−Cost)×Demand(Price)
+Optimization Goal
+
+Maximize Profit subject to constraints.
+
+Inputs
+
+• Cost
+• Demand function
+• Constraints
+
+Methods Used
+
+Gradient Descent
+
+or
+
+Scipy Constrained Optimization
+
+scipy.optimize.minimize()
+Constraints
+
+Minimum margin:
+
+Price ≥ Cost × (1 + MinMargin)
+
+Maximum price limit
+
+Inventory constraints
+
+Output
+
+Optimal Price Recommendation
+
+Example:
+
+Current Price: £100
+Optimal Price: £107
+Expected Profit Increase: +12%
+Agent 4: Strategy Agent
+Purpose
+
+Apply business logic and override rules.
+
+Business Rules
+
+Minimum Margin Rule
+
+Price ≥ Cost × 1.15
+
+Inventory Rule
+
+If inventory low → increase price
+
+Promotion Rule
+
+If demand weak → lower price
+
+Competitor Undercut Rule
+
+Price slightly below competitor
+
+Price = CompetitorPrice − £0.50
+8. Mathematical Models
+8.1 Price Elasticity
+Elasticity = (%Δ Demand) / (%Δ Price)
+
+Interpretation
+
+Elasticity > 1 → Price sensitive
+Elasticity < 1 → Not price sensitive
+
+8.2 Regression Model
+Demand = β0 + β1Price + β2CompetitorPrice + ε
+8.3 Profit Maximization
+Maximize:
+
+Profit(P) = (P − Cost) × Demand(P)
+
+Solve:
+
+dProfit/dP = 0
+8.4 Constrained Optimization
+Maximize Profit(P)
+
+Subject to:
+
+P ≥ Cost × (1 + Margin)
+P ≤ MaxPrice
+9. Functional Requirements
+FR-1 Scrape competitor pricing
+
+System must scrape competitor pricing automatically.
+
+FR-2 Forecast demand
+
+System must forecast demand using historical data.
+
+FR-3 Optimize price
+
+System must calculate profit-maximizing price.
+
+FR-4 Apply business rules
+
+System must enforce margin and inventory rules.
+
+FR-5 Recommend price
+
+System must generate recommended price.
+
+FR-6 Auto update prices (optional)
+
+System can update prices automatically via API.
+
+10. Non-Functional Requirements
+Performance
+
+Support 1M products
+
+Latency < 5 seconds per product
+
+Scalability
+
+Horizontal scaling using distributed workers
+
+Reliability
+
+99.9% uptime
+
+Security
+
+Secure API access
+Encrypted database
+
+11. Data Requirements
+Inputs
+
+Product cost
+Historical sales
+Historical prices
+Competitor prices
+Inventory levels
+
+Outputs
+
+Optimal price
+Expected demand
+Expected profit
+
+12. Technology Stack
+Backend
+
+Python
+FastAPI
+
+ML Libraries
+
+scikit-learn
+statsmodels
+numpy
+pandas
+scipy
+
+Scraping
+
+Scrapy
+Playwright
+
+Database
+
+PostgreSQL
+
+Infrastructure
+
+AWS / GCP
+
+13. API Design
+Get Optimal Price
+GET /optimal-price/{product_id}
+
+Response
+
+{
+  "product_id": "123",
+  "optimal_price": 107,
+  "expected_profit": 5350,
+  "confidence": 0.91
+}
+14. MVP Scope
+
+Included
+
+• Scraper agent
+• Basic demand model
+• Optimization agent
+• Price recommendation
+
+Not Included
+
+• Reinforcement learning
+• Fully autonomous pricing
+
+15. Future Enhancements
+
+Reinforcement learning pricing agent
+
+Multi-product optimization
+
+Game theory competitor modeling
+
+Real-time pricing updates
+
+Deep learning demand models
+
+16. Risks and Mitigations
+Risk	Mitigation
+Bad demand forecasts	Use ensemble models
+Scraping blocked	Use proxies and Playwright
+Overpricing risk	Enforce margin constraints
+Data sparsity	Use transfer learning
+17. Expected Business Impact
+
+Revenue increase: 3–10%
+
+Profit increase: 5–15%
+
+Manual work reduction: 90%
+
+Pricing reaction speed: real-time
+
+18. Example End-to-End Flow
+
+Step 1 Scraper Agent detects competitor price drop
+Step 2 Demand agent predicts demand response
+Step 3 Optimization agent calculates optimal price
+Step 4 Strategy agent applies margin rules
+Step 5 System outputs new price
+Step 6 Price updated automatically

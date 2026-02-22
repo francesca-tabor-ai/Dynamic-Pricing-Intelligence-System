@@ -1,0 +1,25 @@
+---
+description: DPIS architecture, schema, and patterns (single codebase at repo root)
+alwaysApply: true
+---
+
+# Dynamic Pricing Intelligence System (DPIS)
+
+This repo is the full-stack DPIS app. Use these paths and patterns when implementing or changing features.
+
+## Structure
+
+- **Spec / roadmap**: `todo.md` — phased roadmap and remaining work (E2E, polish, delivery).
+- **Stack**: Vite + React 19, tRPC, Drizzle ORM (MySQL), Express, wouter, Radix UI, Recharts, Tailwind.
+- **Data model**: `drizzle/schema.ts` — `users`, `products`, `competitorPrices`, `pricingHistory`, `demandData`; prices in cents; camelCase columns.
+- **Shared types**: `shared/types.ts` re-exports schema types; `shared/_core/errors.ts` — `HttpError`, `BadRequestError`, etc.
+- **API**: `server/routers.ts` — tRPC routers: `system`, `auth`, `products`, `competitors`, `pricing`, `demand`, `optimization` (runPipeline, applyRecommendation). Use `protectedProcedure` for auth, Zod for inputs.
+- **Server entry**: `server/_core/index.ts` — Express, tRPC at `/api/trpc`, OAuth, Vite in dev / static in prod.
+- **Client**: `client/src/App.tsx` — wouter routes: `/` (Home), `/dashboard/*` (Products, Recommendations, Pipeline, Analytics).
+- **Dashboard**: `client/src/components/DashboardLayout.tsx` — sidebar, auth gate via `useAuth`.
+
+## Conventions
+
+- **New features**: Align with `drizzle/schema.ts` and `server/routers.ts`.
+- **UI**: Use `client/src/components/ui/` and dashboard layout patterns.
+- **Backend**: tRPC procedures, DB via `server/db.ts`, pricing logic in `server/pricing-engine.ts`.
