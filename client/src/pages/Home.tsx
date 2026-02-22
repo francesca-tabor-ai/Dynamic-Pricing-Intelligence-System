@@ -74,8 +74,8 @@ export default function Home() {
         {/* Features Section */}
         <section className="max-w-7xl mx-auto px-4 py-20 w-full">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="group space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary/20">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
                 <TrendingUp className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Smart Recommendations</h3>
@@ -84,8 +84,8 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="group space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary/20">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
                 <BarChart3 className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Real-Time Analytics</h3>
@@ -94,8 +94,8 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="group space-y-4 p-6 rounded-lg border border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary/20">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center transition-transform duration-200 group-hover:scale-110">
                 <Workflow className="w-6 h-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold">Multi-Agent Pipeline</h3>

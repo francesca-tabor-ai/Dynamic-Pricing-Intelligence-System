@@ -1,39 +1,102 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
+import { Spinner } from "@/components/ui/spinner";
 import { Redirect, Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import Recommendations from "./pages/Recommendations";
-import Pipeline from "./pages/Pipeline";
-import Analytics from "./pages/Analytics";
+import { PageTransition } from "./components/PageTransition";
+import { ScrollToTop } from "./components/ScrollToTop";
+
+const Home = lazy(() => import("./pages/Home"));
+const Products = lazy(() => import("./pages/Products"));
+const Recommendations = lazy(() => import("./pages/Recommendations"));
+const Pipeline = lazy(() => import("./pages/Pipeline"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+function PageFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[280px]">
+      <Spinner className="size-8 text-muted-foreground" />
+    </div>
+  );
+}
 
 function Router() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/dashboard/*"} nest>
-        {() => (
-          <DashboardLayout>
-            <Switch>
-              <Route path={"/"}>
-                <Redirect to="/dashboard/analytics" replace />
-              </Route>
-              <Route path={"/products"} component={Products} />
-              <Route path={"/recommendations"} component={Recommendations} />
-              <Route path={"/pipeline"} component={Pipeline} />
-              <Route path={"/analytics"} component={Analytics} />
-              <Route component={NotFound} />
-            </Switch>
-          </DashboardLayout>
-        )}
-      </Route>
-      <Route path={"/404"} component={NotFound} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <ScrollToTop />
+      <Switch>
+        <Route path={"/"}>
+          <Suspense fallback={<PageFallback />}>
+            <PageTransition>
+              <Home />
+            </PageTransition>
+          </Suspense>
+        </Route>
+        <Route path={"/dashboard/*"} nest>
+          {() => (
+            <DashboardLayout>
+              <Switch>
+                <Route path={"/"}>
+                  <Redirect to="/dashboard/analytics" replace />
+                </Route>
+                <Route path={"/products"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Products />
+                    </PageTransition>
+                  </Suspense>
+                </Route>
+                <Route path={"/recommendations"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Recommendations />
+                    </PageTransition>
+                  </Suspense>
+                </Route>
+                <Route path={"/pipeline"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Pipeline />
+                    </PageTransition>
+                  </Suspense>
+                </Route>
+                <Route path={"/analytics"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <PageTransition>
+                      <Analytics />
+                    </PageTransition>
+                  </Suspense>
+                </Route>
+                <Route path={"/404"}>
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFound />
+                  </Suspense>
+                </Route>
+                <Route>
+                  <Suspense fallback={<PageFallback />}>
+                    <NotFound />
+                  </Suspense>
+                </Route>
+              </Switch>
+            </DashboardLayout>
+          )}
+        </Route>
+        <Route path={"/404"}>
+          <Suspense fallback={<PageFallback />}>
+            <NotFound />
+          </Suspense>
+        </Route>
+        <Route>
+          <Suspense fallback={<PageFallback />}>
+            <NotFound />
+          </Suspense>
+        </Route>
+      </Switch>
+    </>
   );
 }
 
