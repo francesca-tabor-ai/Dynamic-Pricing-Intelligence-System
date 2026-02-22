@@ -10,6 +10,8 @@ import { PageTransition } from "./components/PageTransition";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 const Home = lazy(() => import("./pages/Home"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const CaseStudies = lazy(() => import("./pages/CaseStudies"));
 const Products = lazy(() => import("./pages/Products"));
 const Recommendations = lazy(() => import("./pages/Recommendations"));
 const Pipeline = lazy(() => import("./pages/Pipeline"));
@@ -33,6 +35,20 @@ function Router() {
           <Suspense fallback={<PageFallback />}>
             <PageTransition>
               <Home />
+            </PageTransition>
+          </Suspense>
+        </Route>
+        <Route path={"/pricing"}>
+          <Suspense fallback={<PageFallback />}>
+            <PageTransition>
+              <Pricing />
+            </PageTransition>
+          </Suspense>
+        </Route>
+        <Route path={"/case-studies"}>
+          <Suspense fallback={<PageFallback />}>
+            <PageTransition>
+              <CaseStudies />
             </PageTransition>
           </Suspense>
         </Route>

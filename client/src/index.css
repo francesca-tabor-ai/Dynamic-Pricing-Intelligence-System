@@ -225,3 +225,21 @@ html {
 ::selection {
   @apply bg-accent/20 text-foreground;
 }
+
+/* Scrolling logos animation */
+@keyframes scroll-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
