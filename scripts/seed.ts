@@ -15,13 +15,21 @@ import {
   demandData,
 } from "../drizzle/schema";
 
+// Prefer public URL - DATABASE_PRIVATE_URL only resolves inside Railway
 const url =
-  process.env.DATABASE_URL ||
   process.env.DATABASE_PUBLIC_URL ||
+  process.env.DATABASE_URL ||
   process.env.DATABASE_PRIVATE_URL;
 
 if (!url) {
   console.error("DATABASE_URL, DATABASE_PUBLIC_URL, or DATABASE_PRIVATE_URL required");
+  process.exit(1);
+}
+if (url.includes("railway.internal") && !process.env.RAILWAY_ENVIRONMENT) {
+  console.error(
+    "DATABASE_PRIVATE_URL (postgres.railway.internal) is not reachable from your machine.",
+    "Set DATABASE_PUBLIC_URL or DATABASE_URL in .env.local to the public connection string from Railway."
+  );
   process.exit(1);
 }
 
