@@ -26,6 +26,7 @@ import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { PlatformChatWidget } from "./PlatformChatWidget";
 
 const menuItems = [
   { icon: Package, label: "Products", path: "/dashboard/products" },
@@ -271,6 +272,7 @@ function DashboardLayoutContent({
         )}
         <main className="flex-1 p-4">{children}</main>
       </SidebarInset>
+      <PlatformChatWidget />
     </>
   );
 }

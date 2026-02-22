@@ -17,6 +17,24 @@ import {
   addDemandDataRecord,
 } from "./db";
 import { findOptimalPrice, applyStrategyRules, calculateElasticity } from "./pricing-engine";
+import { invokeLLM } from "./_core/llm";
+
+const PLATFORM_CHAT_SYSTEM_PROMPT = `You are a helpful assistant for the Dynamic Pricing Intelligence System (DPIS). Your role is to answer questions about the platform and guide users.
+
+DPIS is a dashboard that helps users:
+- **Products**: Manage products (name, SKU, base cost, current price, min margin, max price, inventory, demand elasticity). Add and edit products here.
+- **Recommendations**: View AI-generated pricing recommendations. The system runs a pipeline (Scraper → Demand Forecast → Optimization → Strategy) to suggest optimal prices. Users can apply recommendations to update product prices.
+- **Pipeline**: Run the optimization pipeline for a product. It fetches competitor prices, forecasts demand, computes optimal price, and applies business rules to produce a final recommended price.
+- **Analytics**: View pricing history, demand data, and charts.
+
+Be concise and practical. When users ask how to do something, point them to the right section (Products, Recommendations, Pipeline, Analytics) and give short step-by-step guidance. If you don't know something specific about their data, say so and suggest where to look in the app.`;
+
+function extractAssistantText(content: string | Array<{ type: string; text?: string }>): string {
+  if (typeof content === "string") return content;
+  return content
+    .map((part) => (part.type === "text" && part.text ? part.text : ""))
+    .join("");
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -275,6 +293,36 @@ export const appRouter = router({
           message: "Price updated successfully",
           newPrice: input.recommendedPrice,
         };
+      }),
+  }),
+
+  ai: router({
+    chat: protectedProcedure
+      .input(
+        z.object({
+          messages: z.array(
+            z.object({
+              role: z.enum(["user", "assistant"]),
+              content: z.string(),
+            })
+          ),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const apiMessages = [
+          { role: "system" as const, content: PLATFORM_CHAT_SYSTEM_PROMPT },
+          ...input.messages.map((m) => ({
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          })),
+        ];
+        const result = await invokeLLM({ messages: apiMessages });
+        const choice = result.choices?.[0];
+        if (!choice?.message?.content) {
+          throw new Error("No response from assistant");
+        }
+        const text = extractAssistantText(choice.message.content);
+        return { content: text };
       }),
   }),
 });
