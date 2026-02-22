@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { getLoginUrl } from "@/const";
 import { ArrowRight, Zap, TrendingUp, BarChart3, Workflow } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -23,7 +24,11 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button variant="default" className="gap-2">
+              <Button
+                variant="default"
+                className="gap-2"
+                onClick={() => { const url = getLoginUrl(); if (url) window.location.href = url; }}
+              >
                 Get Started
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -51,7 +56,11 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4" />
               </Button>
             ) : (
-              <Button size="lg" className="gap-2 h-12 px-8">
+              <Button
+                size="lg"
+                className="gap-2 h-12 px-8"
+                onClick={() => { const url = getLoginUrl(); if (url) window.location.href = url; }}
+              >
                 Sign In to Continue
                 <ArrowRight className="w-4 h-4" />
               </Button>

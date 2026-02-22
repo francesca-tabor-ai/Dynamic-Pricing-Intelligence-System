@@ -48,7 +48,7 @@ export default function DashboardLayout({
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading, user, error } = useAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -59,25 +59,35 @@ export default function DashboardLayout({
   }
 
   if (!user) {
+    const isUnauthorized =
+      error && typeof error === "object" && "data" in error && (error as { data?: { code?: string } }).data?.code === "UNAUTHORIZED";
+    const isNetworkOrServerError = Boolean(error && !isUnauthorized);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-2xl font-semibold tracking-tight text-center">
-              Sign in to continue
+              {isNetworkOrServerError ? "Connection issue" : "Sign in to continue"}
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+              {isNetworkOrServerError
+                ? "We couldn’t reach the server. Check your connection and try again."
+                : "Access to this dashboard requires authentication. Continue to launch the login flow."}
             </p>
           </div>
           <Button
             onClick={() => {
-              window.location.href = getLoginUrl();
+              if (isNetworkOrServerError) {
+                window.location.reload();
+              } else {
+                const url = getLoginUrl();
+                if (url) window.location.href = url;
+              }
             }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >
-            Sign in
+            {isNetworkOrServerError ? "Retry" : "Sign in"}
           </Button>
         </div>
       </div>

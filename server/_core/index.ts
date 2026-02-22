@@ -8,6 +8,26 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+function validateProductionEnv() {
+  if (!isProduction) return;
+  const missing: string[] = [];
+  if (!process.env.DATABASE_URL?.trim()) missing.push("DATABASE_URL");
+  if (!process.env.JWT_SECRET?.trim()) missing.push("JWT_SECRET");
+  if (missing.length > 0) {
+    console.error("[Startup] Missing required environment variables in production:", missing.join(", "));
+    process.exit(1);
+  }
+}
+
+function securityHeaders(_req: express.Request, res: express.Response, next: express.NextFunction) {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+}
+
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
@@ -28,8 +48,11 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  validateProductionEnv();
+
   const app = express();
   const server = createServer(app);
+  app.use(securityHeaders);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
@@ -58,7 +81,8 @@ async function startServer() {
   }
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    const host = isProduction ? "0.0.0.0" : "localhost";
+    console.log(`Server running on http://${host}:${port}/`);
   });
 }
 
