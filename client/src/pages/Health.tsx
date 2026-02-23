@@ -79,10 +79,10 @@ export default function Health() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Healthy
                 </CardTitle>
-                <CardContent className="p-0 pt-2">
-                  <p className="text-3xl font-bold text-emerald-600">{summary?.healthy ?? 0}</p>
-                </CardContent>
               </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-3xl font-bold text-emerald-600">{summary?.healthy ?? 0}</p>
+              </CardContent>
             </Card>
             <Card
               className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -92,10 +92,10 @@ export default function Health() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Needs attention
                 </CardTitle>
-                <CardContent className="p-0 pt-2">
-                  <p className="text-3xl font-bold text-amber-600">{summary?.attention ?? 0}</p>
-                </CardContent>
               </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-3xl font-bold text-amber-600">{summary?.attention ?? 0}</p>
+              </CardContent>
             </Card>
             <Card
               className="cursor-pointer hover:bg-muted/50 transition-colors"
@@ -105,10 +105,10 @@ export default function Health() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Critical
                 </CardTitle>
-                <CardContent className="p-0 pt-2">
-                  <p className="text-3xl font-bold text-red-600">{summary?.critical ?? 0}</p>
-                </CardContent>
               </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-3xl font-bold text-red-600">{summary?.critical ?? 0}</p>
+              </CardContent>
             </Card>
           </div>
 

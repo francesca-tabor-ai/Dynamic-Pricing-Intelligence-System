@@ -113,7 +113,7 @@ export default function Simulator() {
   const resetSliders = () => {
     setSimulatedPrice(0);
     setSimulatedCompetitor(0);
-    setSimulatedElasticity(0);
+    setSimulatedElasticity(1.2);
   };
 
   if (productsLoading) {

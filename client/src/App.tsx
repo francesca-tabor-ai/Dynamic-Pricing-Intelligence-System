@@ -54,6 +54,9 @@ function Router() {
             </PageTransition>
           </Suspense>
         </Route>
+        <Route path={"/dashboard"}>
+          <Redirect to="/dashboard/health" replace />
+        </Route>
         <Route path={"/dashboard/*"} nest>
           {() => (
             <DashboardLayout>

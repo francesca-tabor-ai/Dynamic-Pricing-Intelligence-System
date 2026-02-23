@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { TrendingUp, TrendingDown, Zap, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export default function Recommendations() {
 
   const { data: products, isLoading: productsLoading } = trpc.products.list.useQuery();
   const pipelineMutation = trpc.optimization.runPipeline.useMutation();
+  const addCompetitorMutation = trpc.competitors.add.useMutation();
   const [recommendation, setRecommendation] = useState<any>(null);
   const [recLoading, setRecLoading] = useState(false);
 
@@ -34,6 +36,17 @@ export default function Recommendations() {
     if (!selectedProductId) return;
     setRecLoading(true);
     try {
+      // If a competitor price is provided, save it to the DB first so
+      // the pipeline can use it in the Scraper stage.
+      const priceVal = parseFloat(competitorPrice);
+      if (!isNaN(priceVal) && priceVal > 0) {
+        const priceCents = Math.round(priceVal * 100);
+        await addCompetitorMutation.mutateAsync({
+          productId: parseInt(selectedProductId),
+          competitorName: "Manual Entry",
+          price: priceCents,
+        });
+      }
       const result = await pipelineMutation.mutateAsync({ productId: parseInt(selectedProductId) });
       setRecommendation(result);
     } catch (error) {
@@ -101,13 +114,13 @@ export default function Recommendations() {
               </div>
               <div>
                 <label className="text-sm font-medium">Competitor Price ($)</label>
-                <input
+                <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   value={competitorPrice}
                   onChange={(e) => setCompetitorPrice(e.target.value)}
-                  placeholder="Enter competitor price"
-                  className="w-full px-3 py-2 border border-input rounded-md text-sm"
+                  placeholder="e.g. 29.99"
                 />
               </div>
             </div>
